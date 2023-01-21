@@ -1,0 +1,244 @@
+[project]
+name = "py7zr"
+requires-python = ">=3.7"
+description = "Pure python 7-zip library"
+readme = "README.rst"
+license = {text = "LGPL-2.1-or-later"}
+authors = [
+    {name = "Hiroshi Miura", email = "miurahr@linux.com"},
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+      "texttable",
+      "pycryptodomex>=3.6.6",
+      'importlib_metadata;python_version<"3.8"',
+      'brotli>=1.0.9;platform_python_implementation=="CPython"',
+      'brotlicffi>=1.0.9.2;platform_python_implementation=="PyPy"',
+      "psutil",
+      "pyzstd>=0.14.4",
+      "pyppmd>=0.18.1,<0.19.0",
+      "pybcj>=0.6.0",
+      "multivolumefile>=0.2.3",
+      'inflate64>=0.3.0;python_version>"3.6"',
+]
+keywords = ['compression', '7zip', 'lzma', 'zstandard', 'ppmd', 'lzma2', 'bcj', 'archive']
+dynamic = ["version", "entry-points"]
+
+[project.scripts]
+py7zr = "py7zr.__main__:main"
+
+[project.optional-dependencies]
+test_compat = ["libarchive-c"]
+test = [
+      "pytest",
+      "pytest-benchmark",
+      "pytest-cov",
+      "pytest-remotedata",
+      "pytest-timeout",
+      "pyannotate",
+      "py-cpuinfo",
+      "coverage[toml]>=5.2",
+      "coveralls>=2.1.1",
+]
+docs = [
+      "sphinx>=5.0",
+      "sphinx-py3doc-enhanced-theme",
+      "sphinx-a4doc",
+      "docutils",
+]
+check = [
+      "mypy>=0.940",
+      "mypy_extensions>=0.4.1",
+      "check-manifest",
+      "flake8",
+      "flake8-black",
+      "flake8-deprecated",
+      "isort>=5.0.3",
+      "pygments",
+      "readme-renderer",
+      "twine",
+]
+debug = [
+      "pytest",
+      "pytest-leaks",
+      "pytest-profiling",
+]
+
+[project.urls]
+Homepage = "https://py7zr.readthedocs.io/"
+Documentation = "https://py7zr.readthedocs.io/en/stable/"
+"Bug Tracker" = "https://github.com/miurahr/py7zr/issues"
+Source = "https://github.com/miurahr/py7zr"
+Changelog = "https://github.com/miurahr/py7zr/blob/master/Changelog.rst"
+
+[build-system]
+requires = ["setuptools>=63", "wheel", "setuptools_scm[toml]>=7.0.5"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+local_scheme = "no-local-version"
+write_to = "py7zr/version.py"
+write_to_template = """
+__version__ = \"{version}\"
+"""
+tag_regex = "^(?P<prefix>v)?(?P<version>[^\\+]+)(?P<suffix>.*)?$"
+
+[tool.coverage.run]
+branch = true
+parallel = true
+source = ["py7zr"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = ["if __name__ == .__main__.:", "pragma: no-cover", "@abstract", "def __repr__"]
+
+[tool.black]
+line-length = 125
+target-version = ['py38']
+
+[tool.isort]
+known_first_party = ['py7zr']
+known_third_party = ["docutils", "flake8", "pyannotate_runtime", "pytest", "pytz", "setuptools", "sphinx", "yaml"]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 125
+
+[tool.mypy]
+warn_redundant_casts = true
+warn_unused_ignores = true
+strict_optional = true
+show_column_numbers = true
+
+[tool.check-manifest]
+ignore = ["py7zr/version.py", "azure-pipelines.yml", ".readthedocs.yml", "codecov.yml"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["tests"]
+python_files = "test*.py"
+norecursedirs = [".git", "_build", "tmp", ".eggs"]
+timeout = 480
+markers = [
+    "asyncio: mark a atest as an asyncio test.",
+    "basic: mark a test as a basic feature test.",
+    "files: mark a test as a test with actual files.",
+    "api: mark a test as an interface test.",
+    "unit: mark a test as an unit test.",
+    "cli: mark a test as a cli test.",
+    "benchmark: mark a test as a benchmarking.",
+    "misc: misc tests",
+    "slow: mark a slow tests",
+]
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = mypy, check, pypy{37,38}, py{37,38,39,310,311}, py39d, docs, mprof
+
+[testenv]
+basepython =
+    py37:   python3.7
+    py38:   python3.8
+    py39:   python3.9
+    py39d:  python3.9-dbg
+    py310:  python3.10
+    py311:  python3.11
+    pypy37:  pypy3.7
+    pypy38:  pypy3.8
+    docs:   python3.8
+    check:  python3.8
+    mprof:  python3.8
+    mypy:   python3.8
+passenv = GITHUB_* PYTEST_ADDOPTS COVERALLS_* LIBARCHIVE
+extras = test
+commands =
+    python -m pytest -vv
+depends =
+    pypy3,py{36,37,38,39,310}: clean, check
+
+[testenv:py38]
+extras = test, test_compat
+
+[testenv:pypy3]
+extras = test, test_compat
+
+[testenv:mprof]
+extras = test, debug
+commands =
+    mprof run --multiprocess pytest
+    mprof plot --output memory-profile.png
+deps =
+    memory_profiler
+    matplotlib
+
+[testenv:py39d]
+extras = test, debug
+commands =
+    python3.9d -m pytest -v --no-cov -R : -k "extract_lzma_1 or extract_encrypted_2 or compress_simple_file_0 or encrypt_simple_file_0"
+deps =
+    pytest-leaks
+
+[testenv:mypy]
+extras = check
+commands = mypy py7zr
+deps =
+    pyzstd
+
+[testenv:check]
+extras = check
+ignore_errors=true
+commands =
+    flake8 py7zr tests setup.py
+    isort --quiet --check-only --diff py7zr/*.py tests setup.py
+    python setup.py sdist
+    twine check dist/*
+    check-manifest {toxinidir}
+
+[testenv:clean]
+deps = coverage[toml]>=5.2
+skip_install = true
+commands = coverage erase
+
+[testenv:coveralls]
+deps =
+    coveralls
+skip_install = true
+commands =
+    coveralls []
+
+[testenv:docs]
+extras = docs
+commands =
+    sphinx-build {posargs:-E} -b html docs build/docs
+    sphinx-build -b linkcheck docs build/docs
+
+[gh-actions]
+python =
+    3.7: py37
+    3.8: py38, check, mypy, docs
+    3.9: py39
+    3.10: py310
+    3.11: py311
+    pypy3.7: pypy37
+"""
